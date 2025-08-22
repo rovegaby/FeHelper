@@ -101,22 +101,42 @@ function zipPackage(cb) {
     fs.writeFileSync(pathOfMF, JSON.stringify(manifest));
 
     // ============压缩打包================================================
-    shell.exec('cd output/ && rm -rf fehelper.zip && zip -r fehelper.zip apps/ > /dev/null && cd ../');
-    let size = fs.statSync('output/fehelper.zip').size;
-    size = pretty(size);
-
-
-    console.log('\n\n================================================================================');
-    console.log('    当前版本：', manifest.version, '\t文件大小:', size);
-    console.log('    去Chrome商店发布吧：https://chrome.google.com/webstore/devconsole');
-    console.log('================================================================================\n\n');
+    // 删除已存在的zip文件
+    if (fs.existsSync('output/fehelper.zip')) {
+        fs.unlinkSync('output/fehelper.zip');
+    }
     
-    cb();
+    // 使用gulp-zip创建zip文件
+    return gulp.src('output/apps/**/*')
+        .pipe(zip('fehelper.zip'))
+        .pipe(gulp.dest('output'))
+        .on('end', function() {
+            let size = fs.statSync('output/fehelper.zip').size;
+            size = pretty(size);
+
+            console.log('\n\n================================================================================');
+            console.log('    当前版本：', manifest.version, '\t文件大小:', size);
+            console.log('    去Chrome商店发布吧：https://chrome.google.com/webstore/devconsole');
+            console.log('================================================================================\n\n');
+            
+            cb();
+        });
 }
 
 // 打包ms-edge安装包
 function edgePackage(cb) {
-    shell.exec('rm -rf output-edge && cp -r output output-edge && rm -rf output-edge/fehelper.zip');
+    // 清理输出目录
+    if (fs.existsSync('output-edge')) {
+        shell.rm('-rf', 'output-edge');
+    }
+    
+    // 复制文件
+    shell.cp('-r', 'output', 'output-edge');
+    
+    // 删除原有zip文件
+    if (fs.existsSync('output-edge/fehelper.zip')) {
+        fs.unlinkSync('output-edge/fehelper.zip');
+    }
 
     // 更新edge所需的配置文件
     let pathOfMF = './output-edge/apps/manifest.json';
@@ -127,23 +147,39 @@ function edgePackage(cb) {
     delete manifest.update_url;
     fs.writeFileSync(pathOfMF, JSON.stringify(manifest));
 
-    shell.exec('cd output-edge/apps && zip -r ../fehelper.zip ./ > /dev/null && cd ../../');
-    let size = fs.statSync('output-edge/fehelper.zip').size;
-    size = pretty(size);
+    // 使用gulp-zip创建zip文件
+    return gulp.src('output-edge/apps/**/*')
+        .pipe(zip('fehelper.zip'))
+        .pipe(gulp.dest('output-edge'))
+        .on('end', function() {
+            let size = fs.statSync('output-edge/fehelper.zip').size;
+            size = pretty(size);
 
-    console.log('\n\nfehelper.zip 已打包完成！');
+            console.log('\n\nfehelper.zip 已打包完成！');
 
-    console.log('\n\n================================================================================');
-    console.log('    当前版本：', manifest.version, '\t文件大小:', size);
-    console.log('    去Edge商店发布吧：https://partner.microsoft.com/zh-cn/dashboard/microsoftedge/overview');
-    console.log('================================================================================\n\n');
-    
-    cb();
+            console.log('\n\n================================================================================');
+            console.log('    当前版本：', manifest.version, '\t文件大小:', size);
+            console.log('    去Edge商店发布吧：https://partner.microsoft.com/zh-cn/dashboard/microsoftedge/overview');
+            console.log('================================================================================\n\n');
+            
+            cb();
+        });
 }
 
 // 打包Firefox安装包
 function firefoxPackage(cb) {
-    shell.exec('rm -rf output-firefox && cp -r output output-firefox && rm -rf output-firefox/fehelper.zip');
+    // 清理输出目录
+    if (fs.existsSync('output-firefox')) {
+        shell.rm('-rf', 'output-firefox');
+    }
+    
+    // 复制文件
+    shell.cp('-r', 'output', 'output-firefox');
+    
+    // 删除原有zip文件
+    if (fs.existsSync('output-firefox/fehelper.zip')) {
+        fs.unlinkSync('output-firefox/fehelper.zip');
+    }
 
     // 清理掉firefox里不支持的tools
     let rmTools = ['page-capture', 'color-picker', 'ajax-debugger', 'wpo', 'code-standards', 'ruler', 'remove-bg'];
@@ -176,18 +212,23 @@ function firefoxPackage(cb) {
     manifest.content_scripts.splice(1,2);
     fs.writeFileSync(pathOfMF, JSON.stringify(manifest));
 
-    shell.exec('cd output-firefox/apps && zip -r ../fehelper.xpi ./ > /dev/null && cd ../../');
-    let size = fs.statSync('output-firefox/fehelper.xpi').size;
-    size = pretty(size);
+    // 使用gulp-zip创建.xpi文件
+    return gulp.src('output-firefox/apps/**/*')
+        .pipe(zip('fehelper.xpi'))
+        .pipe(gulp.dest('output-firefox'))
+        .on('end', function() {
+            let size = fs.statSync('output-firefox/fehelper.xpi').size;
+            size = pretty(size);
 
-    console.log('\n\nfehelper.xpi 已打包完成！');
+            console.log('\n\nfehelper.xpi 已打包完成！');
 
-    console.log('\n\n================================================================================');
-    console.log('    当前版本：', manifest.version, '\t文件大小:', size);
-    console.log('    去Chrome商店发布吧：https://addons.mozilla.org/zh-CN/developers/addon/web%E5%89%8D%E7%AB%AF%E5%8A%A9%E6%89%8B-fehelper/versions');
-    console.log('================================================================================\n\n');
-    
-    cb();
+            console.log('\n\n================================================================================');
+            console.log('    当前版本：', manifest.version, '\t文件大小:', size);
+            console.log('    去Chrome商店发布吧：https://addons.mozilla.org/zh-CN/developers/addon/web%E5%89%8D%E7%AB%AF%E5%8A%A9%E6%89%8B-fehelper/versions');
+            console.log('================================================================================\n\n');
+            
+            cb();
+        });
 }
 
 function syncFiles() {
