@@ -218,6 +218,83 @@ new Vue({
             JsonEnDecode.urlDecodeByFetch(editor.getValue()).then(text => editor.setValue(text));
         },
 
+        removeEscapes: function () {
+            let source = editor.getValue();
+            if (!source.trim()) {
+                alert('请先输入JSON内容');
+                return;
+            }
+            
+            try {
+                let processed = this.processEscapeChars(source);
+                this.disableEditorChange(processed);
+                this.format(); // 触发重新格式化
+            } catch (error) {
+                alert('处理过程中发生错误：' + error.message);
+            }
+        },
+
+        processEscapeChars: function (jsonString) {
+            if (!jsonString) {
+                return jsonString || '';
+            }
+            if (typeof jsonString !== 'string') {
+                return jsonString;
+            }
+            
+            let result = '';
+            let i = 0;
+            
+            while (i < jsonString.length) {
+                if (jsonString[i] === '\\' && i + 1 < jsonString.length) {
+                    let nextChar = jsonString[i + 1];
+                    // 处理常见的转义字符
+                    switch (nextChar) {
+                        case '"':  // 双引号转义
+                        case "'":  // 单引号转义
+                        case '/':  // 斜杠转义
+                            result += nextChar;
+                            i += 2; // 跳过反斜杠和下一个字符
+                            break;
+                        case '\\': // 双反斜杠转义，保留一个
+                            result += '\\';
+                            i += 2;
+                            break;
+                        case 'n':  // 换行符转义
+                            result += '\n';
+                            i += 2;
+                            break;
+                        case 't':  // 制表符转义
+                            result += '\t';
+                            i += 2;
+                            break;
+                        case 'r':  // 回车符转义
+                            result += '\r';
+                            i += 2;
+                            break;
+                        case 'b':  // 退格符转义
+                            result += '\b';
+                            i += 2;
+                            break;
+                        case 'f':  // 换页符转义
+                            result += '\f';
+                            i += 2;
+                            break;
+                        default:
+                            // 不是识别的转义字符，保留原样
+                            result += jsonString[i];
+                            i++;
+                            break;
+                    }
+                } else {
+                    result += jsonString[i];
+                    i++;
+                }
+            }
+            
+            return result;
+        },
+
         updateWrapperHeight: function () {
             let curLayout = localStorage.getItem(LOCAL_KEY_OF_LAYOUT);
             let elPc = document.querySelector('#pageContainer');

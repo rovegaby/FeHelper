@@ -1,136 +1,393 @@
-# FeHelper For Chrome, Firefox & MS-Edge
+# FeHelper - 前端开发者工具集
 
-FeHelper是一个功能强大的浏览器扩展，专为前端开发者设计，集成了多种实用工具，帮助开发者提高工作效率。无论是JSON数据处理、二维码生成与解码，还是代码美化与压缩，FeHelper都能为您提供便捷的解决方案。
+FeHelper是一个模块化的浏览器扩展开发框架，专为前端开发者设计。基于Chrome扩展 Manifest V3 规范，采用开放平台架构，支持动态工具加载和多浏览器兼容。
 
-![FeHelper](https://user-images.githubusercontent.com/865735/75407628-7399c580-594e-11ea-8ef2-00adf39d61a8.jpg)
+## 技术特性
 
-[![Google Chrome](https://img.shields.io/chrome-web-store/v/pkgccpejnmalmdinmhkkfafefagiiiad.svg?logo=Google%20Chrome&logoColor=red&color=blue)](https://chrome.google.com/webstore/detail/pkgccpejnmalmdinmhkkfafefagiiiad)
-[![Google Chrome](https://img.shields.io/chrome-web-store/stars/pkgccpejnmalmdinmhkkfafefagiiiad.svg?logo=Google%20Chrome&logoColor=red&color=blue)](https://chrome.google.com/webstore/detail/pkgccpejnmalmdinmhkkfafefagiiiad)
-[![Google Chrome](https://img.shields.io/chrome-web-store/users/pkgccpejnmalmdinmhkkfafefagiiiad.svg?logo=Google%20Chrome&logoColor=red&color=blue)](https://chrome.google.com/webstore/detail/pkgccpejnmalmdinmhkkfafefagiiiad)
+- 🏗️ **模块化架构** - 基于Chrome扩展API的三层架构设计
+- 🔄 **动态加载** - 支持工具的动态安装、更新和卸载
+- 🌐 **多浏览器支持** - Chrome、Firefox、Edge全平台兼容
+- 📦 **自动化构建** - 基于Gulp的完整构建流程
+- 🛡️ **安全机制** - CSP安全策略和沙箱执行环境
 
-## 一、功能展示
+## 技术架构
 
-![Web前端助手-FeHelper](https://user-images.githubusercontent.com/865735/75407048-020d4780-594d-11ea-9dd6-48f6d5774c2f.png)
+### 架构模式
 
-## 二、贡献指南
+FeHelper 采用模块化架构，每个功能作为独立模块，支持动态加载、更新和卸载。
 
-我们欢迎社区的贡献！如果您有兴趣参与FeHelper的开发，请按照以下步骤进行：
+```mermaid
+graph TB
+    subgraph "核心模块"
+        A[background/background.js] --> B[awesome.js]
+        A --> C[menu.js]
+        A --> D[inject-tools.js]
+        A --> E[tools.js]
+    end
+    
+    subgraph "用户界面"
+        F[popup/index.html] --> A
+        G[options/index.html] --> A
+    end
+    
+    subgraph "功能模块"
+        H[json-format/]
+        I[code-beautify/]
+        J[qr-code/]
+        K[screenshot/]
+        L[postman/]
+        M[aiagent/]
+    end
+    
+    B --> |"dynamic loading"| H
+    B --> |"dynamic loading"| I
+    B --> |"dynamic loading"| J
+    D --> |"script injection"| K
+    
+    N[chrome.storage.local] --> B
+    O[chrome.runtime.sendMessage] --> A
+```
 
-1. Fork本仓库并克隆到本地。
-2. 创建一个新的分支：`git checkout -b feature/YourFeature`
-3. 提交您的更改：`git commit -m 'Add some feature'`
-4. 推送到分支：`git push origin feature/YourFeature`
-5. 创建一个Pull Request。
+### 核心组件
 
-## 三、官网地址
-https://www.baidufe.com/fehelper/index/index.html
+- **background.js**: 消息中枢，协调各模块通信
+- **awesome.js**: 核心管理引擎，负责工具的动态加载和生命周期管理
+- **inject-tools.js**: 运行时脚本注入和权限管理
+- **tools.js**: 工具元数据和配置管理
+- **menu.js**: 右键菜单生成和事件处理
 
-### 1、扩展示例
-![Web前端助手-FeHelper](https://user-images.githubusercontent.com/865735/75407048-020d4780-594d-11ea-9dd6-48f6d5774c2f.png)
+## 开发环境
 
-### 2、关于新版
-- 新版本的FeHelper，是以开放平台为思路的设计，详细了解FeHelper新版，可以参考链接：
-    - [FeHelper-开放平台版介绍文档](/README_NEW.md)
-    - [开放平台思路下的FeHelper-阿烈叔的博客](https://www.baidufe.com/item/5b1e07d6f5106b6907bc.html)
-- 新版本FeHelper在一个新的`私有仓储`，待打磨得足够细腻了，再考虑开源    
+### 环境要求
 
-![FeHelper新版](https://user-images.githubusercontent.com/865735/75334978-b5315e80-58c3-11ea-9af0-e593149b0f7c.png)
+- **Node.js**: v14.0+
+- **npm**: v6.0+
+- **Gulp CLI**: v3.1.0+
+- **Chrome/Edge/Firefox**: 最新版本
 
-## 四、功能详细介绍
+### 快速开始
 
-FeHelper是一个功能强大的开发者工具，专为前端开发者设计，集成了多种实用工具，帮助开发者提高工作效率。以下是FeHelper的主要功能：
+```bash
+# 克隆项目
+git clone https://github.com/zxlie/FeHelper.git
+cd FeHelper
 
-- **JSON工具**: 
-  - **JSON美化工具**：自动检测并格式化JSON数据，支持手动格式化、乱码解码、排序、BigInt处理、编辑、下载和皮肤定制等功能，极大地方便了开发者对JSON数据的处理。
-  - **JSON比对工具**：支持两个JSON内容的自动键值比较，并高亮显示差异点，帮助开发者快速识别数据变化。
+# 安装依赖
+npm install
 
-- **二维码工具**: 
-  - **二维码生成器**：支持自定义颜色和icon的二维码生成，适用于多种应用场景。
-  - **二维码解码器**：支持多种模式的二维码解码，包括截图后粘贴解码，方便快捷。
+# 开发模式（自动监听文件变化）
+npm run watch
 
-- **编码工具**: 
-  - **字符串编解码**：支持多格式的信息编解码，如Unicode、UTF-8、URL、Base64、MD5等，满足不同编码需求。
-  - **代码美化工具**：支持多语言的代码美化，包括Javascript、CSS、HTML、XML、SQL，帮助开发者保持代码整洁。
-  - **代码压缩工具**：提供简单的代码压缩功能，支持HTML、Javascript、CSS代码压缩，优化网页加载速度。
+# 构建产品版
+npm run build
+```
 
-- **开发者工具**: 
-  - **AI助手**：由AI强力支撑的超智能对话工具，支持代码编写、改代码、做方案设计等，提升开发效率。
-  - **简易Postman**：接口调试工具，支持GET/POST/HEAD请求方式，自动格式化JSON内容，简化API测试流程。
-  - **Websocket工具**：支持对Websocket接口的抓包测试，包括ws服务的连接测试、消息发送测试、结果分析等。
+### 项目结构
 
-- **其他工具**: 
-  - **时间(戳)转换**：本地化时间与时间戳之间的相互转换，支持秒/毫秒、世界时区切换、各时区时钟展示等。
-  - **随机密码生成**：将各种字符进行随机组合生成密码，支持指定长度和字符类型，确保密码安全性。
-  - **我的便签笔记**：便签笔记工具，支持创建目录对笔记进行分类管理，笔记支持一键导出/导入，方便信息管理。
-  - **Markdown转换**：Markdown编写/预览工具，支持HTML片段直接转Markdown，支持将内容以PDF格式进行下载。
-  - **网页截屏工具**：可对任意网页进行截屏，支持可视区域截屏、全网页滚动截屏，最终结果可预览后再保存。
-  - **页面取色工具**：可直接在网页上针对任意元素进行色值采集，将光标移动到需要取色的位置，单击确定即可。
+```
+FeHelper/
+├── apps/                    # 源代码目录
+│   ├── background/         # 后台脚本
+│   ├── popup/              # 弹出页面
+│   ├── options/            # 配置页面
+│   ├── static/             # 静态资源
+│   ├── json-format/        # JSON工具
+│   ├── code-beautify/      # 代码美化
+│   ├── qr-code/            # 二维码工具
+│   └── manifest.json       # 扩展配置
+├── output/                  # 构建输出目录
+├── gulpfile.js             # 构建配置
+└── package.json            # 项目配置
+```
 
-FeHelper不仅功能强大，而且易于使用，是前端开发者的得力助手。更多工具和详细介绍请访问[FeHelper官网](https://www.baidufe.com/fehelper/index/index.html)。
+## 构建系统
 
-## 五、扩展安装地址
+### Gulp 构建流程
 
-### 1、Chrome web store地址（推荐）
-https://chrome.google.com/webstore/detail/pkgccpejnmalmdinmhkkfafefagiiiad?hl=zh-cn
+项目采用 Gulp 4.x 作为构建工具，支持自动化的代码压缩、资源合并和打包。
 
-- 官网安装，你可能需要额外的梯子
-    - [谷歌访问助手（官方正式版）](http://www.ggfwzs.com/)
-    - [谷歌访问助手（发烧友破解版）](https://github.com/haotian-wang/google-access-helper)
+```mermaid
+flowchart TD
+    A[清理输出目录] --> B[复制静态资源]
+    A --> C[处理JSON文件]
+    A --> D[处理HTML文件]
+    A --> E[处理JS文件]
+    A --> F[处理CSS文件]
+    B --> G[打包生成]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    G --> H[Chrome zip]
+    G --> I[Edge zip]
+    G --> J[Firefox xpi]
+```
 
-### 2、Microsoft Edge Addons
-https://microsoftedge.microsoft.com/addons/detail/feolnkbgcbjmamimpfcnklggdcbgakhe?hl=zh-CN
+### 构建命令
 
-- 如果你在使用Microsoft Edge浏览器的话，`可以直接安装`，不用翻墙
+```bash
+# 基本构建（Chrome）
+npm run build
+# 或
+gulp
 
-### 3、Firefox Add-ons
-- FeHelper官网一键安装： https://www.baidufe.com/fehelper/index/index.html
-- GitHub下载xpi安装：[点击进入下载页](/apps/static/screenshot/xpi)
+# Edge 扩展打包
+gulp edge
 
-### 4、crx文件下载=>本地安装(Chrome)
-- 官网下载：https://www.baidufe.com/fehelper
-- 翻墙下载：https://chrome-extension-downloader.com/?extension=pkgccpejnmalmdinmhkkfafefagiiiad
-- 本站下载：[点击进入下载页](/apps/static/screenshot/crx)
+# Firefox 扩展打包
+gulp firefox
 
-## 六、使用方法
+# 开发模式（监听文件变化）
+npm run watch
+# 或
+gulp watch
+```
 
-使用FeHelper时，请遵循以下最佳实践，以确保安全和高效：
+### 模块合并机制
 
-1. **从可信来源安装**：
-   - 确保只从官方浏览器商店（如Chrome Web Store）安装FeHelper，以避免潜在的安全风险。
+#### JavaScript 合并
+支持通过 `__importScript()` 语法自动合并JS模块：
 
-2. **定期检查和更新**：
-   - 定期检查FeHelper的更新，以确保使用最新版本，获得最新的功能和安全修复。
+```javascript
+// 在源文件中使用
+__importScript('utils');
+__importScript('api/request.js');
 
-3. **管理权限**：
-   - 在安装FeHelper时，仔细查看所请求的权限，确保它们与扩展的功能相符。
+// 构建时自动合并为单个文件
+```
 
-4. **安全使用**：
-   - 只安装必要的扩展，避免过多的扩展增加攻击面。
+#### CSS 合并
+支持通过 `@import` 语法合并CSS文件：
 
-5. **用户反馈和支持**：
-   - 如果在使用FeHelper时遇到问题或有建议，及时通过提供的反馈渠道联系开发者。
+```css
+/* 在源文件中使用 */
+@import "common.css";
+@import "theme/dark.css";
 
-通过遵循这些指南，您可以更安全、更高效地使用FeHelper，充分发挥其强大的功能。
+/* 构建时自动合并和压缩 */
+```
 
-## 七、用户反馈渠道
-- 在线反馈：https://www.baidufe.com/fehelper/feedback.html
-- Mail反馈：xianliezhao@foxmail.com
-- Wechat反馈：398824681 <br>
-![阿烈叔的个人微信](https://user-images.githubusercontent.com/865735/75407547-3cc3af80-594e-11ea-9abf-6168b94547a1.png)
+## 扩展机制
 
-## 八、使用推荐与案例
+### 动态工具管理
 
-FeHelper在开发者社区中广受好评，以下是一些使用推荐和案例：
+FeHelper 采用开放平台设计，支持工具的动态加载和管理。
 
-1. **接口调试工具**: FeHelper被誉为强大的接口调试工具，支持模拟各种HTTP请求，保存cookie等信息，详情请参阅[CSDN博客](https://blog.csdn.net/fuhanghang/article/details/84592480)。
+```mermaid
+sequenceDiagram
+    participant User
+    participant Background
+    participant Storage
+    participant Dynamic
+    
+    User->>Background: 点击工具
+    Background->>Storage: 检查工具状态
+    Storage-->>Background: 返回安装情况
+    Background->>Dynamic: 加载工具资源
+    Dynamic->>Dynamic: 渲染界面
+    Dynamic->>User: 显示工具界面
+```
 
-2. **功能丰富的插件**: FeHelper支持多种浏览器，提供JSON格式化、代码美化与压缩等功能，更多信息请访问[CSDN博客](https://blog.csdn.net/weixin_42272869/article/details/124412501)。
+### 核心 API 接口
 
-3. **前端开发测试利器**: FeHelper包含字符串编解码、代码美化、JSON格式化查看等前端实用工具，详见[博客园](https://www.cnblogs.com/oycyqr/p/8867362.html)。
+#### chrome.DynamicToolRunner
+动态工具运行器，负责工具的加载和执行。
 
-4. **网页源码压缩**: FeHelper在网页html源码压缩、css或javascript的压缩方面表现出色，更多内容在[阿里云开发者社区](https://developer.aliyun.com/article/710232)。
+```javascript
+// 运行工具
+chrome.DynamicToolRunner({
+    tool: 'json-format',
+    withContent: data,
+    query: 'param=value',
+    noPage: false
+});
+```
 
-5. **前端必备插件**: FeHelper被推荐为前端必备的Chrome插件，详情请查看[稀土掘金](https://juejin.cn/post/6854573211590836231)。
+#### Awesome 工具管理 API
 
-## 九、一些样例
-- [点击进入查看>>](/apps/static/screenshot/crx)
+```javascript
+// 获取已安装工具
+Awesome.getInstalledTools().then(tools => {
+    console.log('已安装工具:', tools);
+});
+
+// 安装工具
+Awesome.installTool(toolName, toolData);
+
+// 卸载工具
+Awesome.uninstallTool(toolName);
+```
+
+### 消息通信机制
+
+基于Chrome Runtime API的消息传递系统：
+
+```javascript
+// 发送消息
+chrome.runtime.sendMessage({
+    type: MSG_TYPE.TOOL_OPERATION,
+    tool: 'json-format',
+    action: 'format',
+    data: jsonData
+});
+
+// 接收消息
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === MSG_TYPE.TOOL_OPERATION) {
+        // 处理工具操作
+        sendResponse({ success: true });
+    }
+});
+```
+
+## 技术配置
+
+### Manifest V3 配置
+
+扩展使用 Manifest V3 规范，支持现代化的浏览器扩展开发：
+
+```json
+{
+  "manifest_version": 3,
+  "name": "FeHelper(前端助手)",
+  "version": "2025.04.1110",
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "tabs", "scripting", "contextMenus", 
+    "activeTab", "storage", "notifications",
+    "unlimitedStorage", "sidePanel"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; style-src 'self' 'unsafe-inline';"
+  }
+}
+```
+
+### 存储系统
+
+使用 `chrome.storage.local` 存储工具数据，突破传统 localStorage 5MB 限制：
+
+```javascript
+// 存储工具数据
+chrome.storage.local.set({
+    [`FH_TOOL_${toolName}`]: toolData
+});
+
+// 读取工具数据
+chrome.storage.local.get(`FH_TOOL_${toolName}`, (result) => {
+    const toolData = result[`FH_TOOL_${toolName}`];
+});
+```
+
+### 安全策略
+
+- **CSP 限制**: 禁止内联脚本执行，防止 XSS 攻击
+- **沙箱执行**: content-script 在沙箱中运行，避免污染页面
+- **权限控制**: 最小化权限请求，可选权限动态申请
+
+## 部署指南
+
+### 本地开发调试
+
+1. 构建扩展：
+```bash
+npm run build
+```
+
+2. 加载扩展：
+   - 打开 `chrome://extensions/`
+   - 开启开发者模式
+   - 点击“加载已解压的扩展程序”
+   - 选择 `output/apps` 目录
+
+### 发布部署
+
+```bash
+# Chrome 商店发布
+npm run build
+# 上传 output/fehelper.zip 到 Chrome Web Store
+
+# Edge 商店发布
+gulp edge
+# 上传 output-edge/fehelper.zip 到 Microsoft Edge Addons
+
+# Firefox 商店发布
+gulp firefox  
+# 上传 output-firefox/fehelper.xpi 到 Firefox Add-ons
+```
+
+### 多浏览器兼容性
+
+项目通过构建脚本自动处理不同浏览器的兼容性问题：
+
+- **Chrome**: 使用 Manifest V3，Service Worker 模式
+- **Edge**: 兼容 Chrome 扩展，去除 update_url 配置
+- **Firefox**: 添加 browser_specific_settings，使用 background scripts
+
+## 贡献指南
+
+### 开发环境搭建
+
+1. **Fork 和克隆项目**
+```bash
+git clone https://github.com/your-username/FeHelper.git
+cd FeHelper
+```
+
+2. **安装依赖**
+```bash
+npm install
+```
+
+3. **开发模式**
+```bash
+npm run watch
+```
+
+### 代码贡献流程
+
+1. 创建特性分支：`git checkout -b feature/your-feature`
+2. 实现功能并添加测试
+3. 遵循项目编码规范
+4. 提交代码：`git commit -m 'Add: new feature'`
+5. 推送分支：`git push origin feature/your-feature`
+6. 创建 Pull Request
+
+### 新工具开发
+
+开发新工具需要遵循以下结构：
+
+```
+tool-name/
+├── index.html          # 工具界面
+├── index.js            # 主逻辑
+├── index.css           # 样式文件
+└── content-script.js   # 内容脚本（可选）
+```
+
+### 代码规范
+
+- 使用 ES6+ 语法
+- 遵循组件化开发原则
+- 添加必要的注释和文档
+- 确保代码通过 ESLint 检查
+- 编写单元测试
+
+## 许可证
+
+本项目采用 ISC 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
+
+## 资源链接
+
+- [项目主页](https://github.com/zxlie/FeHelper)
+- [问题反馈](https://github.com/zxlie/FeHelper/issues)
+- [官方网站](https://www.baidufe.com/fehelper)
+- [Chrome 商店](https://chrome.google.com/webstore/detail/pkgccpejnmalmdinmhkkfafefagiiiad)
+- [Edge 商店](https://microsoftedge.microsoft.com/addons/detail/feolnkbgcbjmamimpfcnklggdcbgakhe)
+
+---
+
+**技术支持**: 基于 Chrome 扩展 Manifest V3、Gulp 4.x、Node.js 14+ 构建

@@ -503,3 +503,13 @@ document.head.appendChild(elStyle);
 ## 七、意见反馈
 - 大家可在feedback中反馈、也可加群反馈、或者直接Mail给我
 - 最后，欢迎搭建使用 FeHelper ，希望`开放平台`思路的FeHelper能给大家带来快感！
+
+
+# Chrome版本（默认）
+npm run build
+
+# Edge版本  
+gulp edge
+
+# Firefox版本
+gulp firefox

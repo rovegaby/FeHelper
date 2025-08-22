@@ -30,6 +30,7 @@
 
                 <button id="btnFormat" class="btn btn-primary btn-xs ui-mr-10" @click="format">格式化</button>
                 <button id="btnCompress" class="btn btn-success btn-xs" @click="compress">压缩</button>
+                <button class="btn btn-warning btn-xs" @click="removeEscapes" id="btnRemoveEscapes">去除转义</button>
                 <span class="x-split">|</span>
                 <input type="checkbox" v-model="jsonLintSwitch" id="jsonLint" @click="lintOn"><label for="jsonLint">JSONLint</label>
                 <span class="x-split">|</span>
