@@ -23,7 +23,11 @@ new Vue({
         jsonLintSwitch: true,
         autoDecode: false,
         fireChange: true,
-        overrideJson: false
+        overrideJson: false,
+        // 回到顶部功能相关数据
+        backToTopVisible: false,
+        scrollThreshold: 200,
+        throttleTimer: null
     },
     mounted: function () {
         // 自动开关灯控制
@@ -75,6 +79,23 @@ new Vue({
                 });
             });
         }
+        
+        // 初始化回到顶部功能
+        this.$nextTick(() => {
+            this.initBackToTop();
+        });
+        
+        // 窗口大小改变时重新计算
+        window.addEventListener('resize', () => {
+            this.$nextTick(() => {
+                this.updateWrapperHeight();
+            });
+        });
+    },
+    
+    beforeDestroy: function() {
+        // 清理资源
+        this.destroyBackToTop();
     },
     methods: {
         format: function () {
@@ -369,6 +390,142 @@ new Vue({
             this.$nextTick(() => {
                 this.format();
             })
+        },
+
+        // 回到顶部功能相关方法
+        scrollToTop: function() {
+            // 添加点击动画效果
+            const button = document.getElementById('backToTopBtn');
+            if (button) {
+                button.style.transform = 'translateY(0) scale(0.95)';
+                setTimeout(() => {
+                    // 检查按钮是否可见
+                    const isVisible = button.classList.contains('visible');
+                    button.style.transform = isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(1)';
+                }, 150);
+            }
+            
+            // 平滑滚动到顶部
+            if (window.scrollTo) {
+                try {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                } catch (e) {
+                    // 不支持smooth滚动的降级方案
+                    this.smoothScrollTo(0, 800);
+                }
+            } else {
+                // 降级方案
+                this.smoothScrollTo(0, 800);
+            }
+        },
+
+        smoothScrollTo: function(target, duration) {
+            const start = window.pageYOffset || document.documentElement.scrollTop;
+            const distance = target - start;
+            const startTime = performance.now();
+            
+            const animateScroll = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = this.easeInOutCubic(progress);
+                
+                window.scrollTo(0, start + distance * ease);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            };
+            
+            requestAnimationFrame(animateScroll);
+        },
+
+        easeInOutCubic: function(t) {
+            return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+        },
+
+        handleScroll: function() {
+            // 使用节流优化滚动事件处理
+            if (this.throttleTimer) {
+                return;
+            }
+            
+            this.throttleTimer = setTimeout(() => {
+                const scrollTop = this.getScrollTop();
+                const shouldShow = scrollTop > this.scrollThreshold;
+                
+                // 直接操作DOM而不使用Vue响应式绑定
+                const backToTopBtn = document.getElementById('backToTopBtn');
+                if (backToTopBtn) {
+                    if (shouldShow) {
+                        backToTopBtn.classList.add('visible');
+                    } else {
+                        backToTopBtn.classList.remove('visible');
+                    }
+                    console.log('回到顶部按钮状态:', shouldShow ? '显示' : '隐藏', '滚动位置:', scrollTop);
+                }
+                
+                // 保留Vue数据更新作为备用
+                this.backToTopVisible = shouldShow;
+                
+                this.throttleTimer = null;
+            }, 16); // 约60fps
+        },
+
+        getScrollTop: function() {
+            // 获取更准确的滚动位置
+            return window.pageYOffset || 
+                   document.documentElement.scrollTop || 
+                   document.body.scrollTop || 0;
+        },
+
+        initBackToTop: function() {
+            // 确保清理之前的监听器
+            this.destroyBackToTop();
+            
+            // 绑定滚动事件
+            window.addEventListener('scroll', this.handleScroll, { passive: true });
+            
+            // 初始化按钮状态
+            this.handleScroll();
+            
+            // 确保按钮元素存在并绑定点击事件
+            this.$nextTick(() => {
+                const backToTopBtn = document.getElementById('backToTopBtn');
+                if (backToTopBtn) {
+                    backToTopBtn.style.pointerEvents = 'auto';
+                    
+                    // 添加原生JavaScript点击事件监听器
+                    backToTopBtn.addEventListener('click', () => {
+                        this.scrollToTop();
+                    });
+                    
+                    console.log('回到顶部按钮初始化成功，已绑定点击事件');
+                    
+                    // 立即检查滚动位置并更新按钮状态
+                    const scrollTop = this.getScrollTop();
+                    const shouldShow = scrollTop > this.scrollThreshold;
+                    if (shouldShow) {
+                        backToTopBtn.classList.add('visible');
+                    } else {
+                        backToTopBtn.classList.remove('visible');
+                    }
+                    console.log('初始化时滚动位置:', scrollTop, '按钮状态:', shouldShow ? '显示' : '隐藏');
+                } else {
+                    console.warn('回到顶部按钮元素未找到');
+                }
+            });
+        },
+
+        destroyBackToTop: function() {
+            // 清理事件监听器
+            window.removeEventListener('scroll', this.handleScroll);
+            if (this.throttleTimer) {
+                clearTimeout(this.throttleTimer);
+                this.throttleTimer = null;
+            }
         }
     }
 });
